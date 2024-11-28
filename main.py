@@ -46,6 +46,22 @@ def blurSurf(surface, amt):
   surf = pygame.transform.smoothscale(surf, surf_size)
   return surf
 
+
+def draw_player_info_ring(players, center, radius):
+    num_players = len(players)
+    angle_step = 2 * math.pi / num_players  # Angle between each player
+
+    for i, player in enumerate(players):
+        angle = -math.pi / 2 + i * angle_step  # Current angle for this player
+        # Calculate position using polar coordinates
+        x = center[0] + radius * math.cos(angle)
+        y = center[1] + radius * math.sin(angle)
+
+        # Display the player's name and lives
+        pyprint(player["name"], (x, y - 20), "white", small_font)  # Name slightly above
+        pyprint(f"{player['lives']} lives", (x, y + 20), "white", lil_font)  # Lives slightly below
+
+
 with open("dictionary.txt", "r") as f:
     dictionary = sorted(word.strip().lower() for word in f.readlines())
 
@@ -89,7 +105,11 @@ bomb = False
 combination_colour = "white"
 pulsing_speed = 0.005
 
-players = [{"name": f"Player {i+1}", "lives": 3} for i in range(3)]  # 3 players
+ring_radius = 250  # Radius of the circle
+ring_center = (screen_width // 2, screen_height // 2)  # Center of the ring
+
+
+players = [{"name": f"Player {i+1}", "lives": 2} for i in range(3)]  # 3 players
 current_player = 0
 
 while running:
@@ -177,6 +197,7 @@ while running:
       )
       scaled_bomb_rect = scaled_bomb_surf.get_rect(center=bomb_rect.center)
       screen.blit(scaled_bomb_surf, scaled_bomb_rect)  # Blit scaled bomb
+      draw_player_info_ring(players, ring_center, ring_radius)
 
       # Add the blinking cursor
       cursor_visible = (current_time // 500) % 2 == 0  # Toggle every 500 ms
@@ -193,10 +214,8 @@ while running:
         else:
             screen.blit(empty_heart_surf, (heart_x, 320))  # Empty 
       """
-      pyprint(f"{players[current_player]['name']}'s Turn", (445, 50), "white", small_font)
-      for i, player in enumerate(players):
-          pyprint(f"{player['name']}: {player['lives']} lives", (445, 100 + i * 40), "white", lil_font)
-
+      pyprint(f"{players[current_player]['name']}'s Turn", (screen_width, screen_height-50), "white", lil_font)
+    
       # Timer      
       #pyprint(str(10-int((current_time - bomb_time)/1000)),(445,50))
       # Combination
@@ -205,13 +224,13 @@ while running:
       pyprint(answer,(screen_width//2,screen_height//2+100))
       # Message
       if current_time - pause < 2000:
-        pyprint(message,(445,450))
+        pyprint(message,(screen_width//2,screen_height-100))
     else:
       game_active = False
 
 
   else:
-     players = [{"name": f"Player {i+1}", "lives": 3} for i in range(3)]
+     players = [{"name": f"Player {i+1}", "lives": 2} for i in range(3)]
      question_answered = False
      answering = False
      boom = False
