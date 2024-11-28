@@ -4,7 +4,9 @@ import math
 
 
 pygame.init()
-screen = pygame.display.set_mode((890,500))
+screen_width = 1280
+screen_height = 720
+screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 running = True
 game_active = False
@@ -19,7 +21,7 @@ heart_surf = pygame.transform.scale(heart_surf,(50,50))
 empty_heart_surf = pygame.image.load('empty_heart.png').convert_alpha()
 empty_heart_surf = pygame.transform.scale(empty_heart_surf,(50,50))
 bomb_surf = pygame.image.load("bomb.png").convert_alpha()
-bomb_rect = bomb_surf.get_rect(center = (475,220))
+bomb_rect = bomb_surf.get_rect(center = ((screen_width//2)+30,((screen_height//2)-30)))
 
 def pyprint(text,pos,colour = "white",font = lil_font):
   surf = font.render(text,True,colour)
@@ -87,6 +89,9 @@ bomb = False
 combination_colour = "white"
 pulsing_speed = 0.005
 
+players = [{"name": f"Player {i+1}", "lives": 3} for i in range(3)]  # 3 players
+current_player = 0
+
 while running:
   for event in pygame.event.get():
     if event.type == pygame.QUIT:
@@ -115,11 +120,18 @@ while running:
   if game_active:
     current_time = pygame.time.get_ticks()
     screen.fill((134, 137, 143))
-    if lives > 0:
-      if bomb is True:
-        message = "You ran out of time!"
+    if len(players) > 1:
+      if bomb:
+        message = f"{players[current_player]['name']} ran out of time!"
+        players[current_player]["lives"] -= 1
+        if players[current_player]["lives"] <= 0:
+          eliminated_player = players.pop(current_player)
+          message = f"{eliminated_player['name']} has been eliminated!"
+          current_player %= len(players)  # Adjust index
+        else:
+          current_player = (current_player + 1) % len(players)  # Next player's turn
+
         answer = ""
-        lives -= 1
         rng = random.randint(0,len(combinations)-1)
         x = combinations[rng]
         bomb = False
@@ -127,23 +139,20 @@ while running:
         answer = answer.strip().lower()
 
         if x not in answer:
-            message = "You didn't include the letters in your word"
-            answer = ""
+          message = f"{players[current_player]['name']} didn't include the letters!"
         elif answer in answered_dictionary:
-            message = "You have already used this word"
-            answer = ""
+          message = f"{players[current_player]['name']} reused a word!"
         elif binary_search(dictionary, answer) == -1:
-            message = "Your word is not in the dictionary!"
-            answer = ""
+          message = f"{players[current_player]['name']}'s word is invalid!"
         else:
-            rng = random.randint(0, len(combinations) - 1)
-            x = combinations[rng]
-            bomb_time = current_time
-            answered_dictionary.append(answer)
-            message = ""
-            answer = ""
+          answered_dictionary.append(answer)
+          rng = random.randint(0, len(combinations) - 1)
+          x = combinations[rng]
+          message = ""
+          bomb_time = current_time
+          current_player = (current_player + 1) % len(players)  # Switch turn
 
-      answering = False
+        answer = ""
 
       answering = False
       if current_time - bomb_time > 10000:
@@ -172,22 +181,28 @@ while running:
       # Add the blinking cursor
       cursor_visible = (current_time // 500) % 2 == 0  # Toggle every 500 ms
       if cursor_visible:
-        cursor_x = 445 + font.size(answer)[0] // 4 - 5*len(answer)  # Position the cursor after the text
+        cursor_x = screen_width//2 + font.size(answer)[0] // 4 - 5*len(answer)  # Position the cursor after the text
         pygame.draw.line(screen, (0, 0, 0), (cursor_x, 375), (cursor_x, 405), 2)  # Draw cursor as a vertical line
 
       # Hearts
+      """
       for i in range(2):
         heart_x = 450 - (2 * 60 // 2) + i * 60 
         if i < lives:
             screen.blit(heart_surf, (heart_x, 320))  # Full heart
         else:
-            screen.blit(empty_heart_surf, (heart_x, 320))  # Empty heart
+            screen.blit(empty_heart_surf, (heart_x, 320))  # Empty 
+      """
+      pyprint(f"{players[current_player]['name']}'s Turn", (445, 50), "white", small_font)
+      for i, player in enumerate(players):
+          pyprint(f"{player['name']}: {player['lives']} lives", (445, 100 + i * 40), "white", lil_font)
+
       # Timer      
-      pyprint(str(10-int((current_time - bomb_time)/1000)),(445,50))
+      #pyprint(str(10-int((current_time - bomb_time)/1000)),(445,50))
       # Combination
-      pyprint(f"{x.upper()}",(445,250),combination_colour,small_font)
+      pyprint(f"{x.upper()}",(screen_width//2,screen_height//2),combination_colour,small_font)
       # Answer
-      pyprint(answer,(445,390))
+      pyprint(answer,(screen_width//2,screen_height-200))
       # Message
       if current_time - pause < 2000:
         pyprint(message,(445,450))
@@ -196,7 +211,7 @@ while running:
 
 
   else:
-     lives = 2
+     players = [{"name": f"Player {i+1}", "lives": 3} for i in range(3)]
      question_answered = False
      answering = False
      boom = False
@@ -209,10 +224,9 @@ while running:
 
 
      screen.fill((134, 137, 143))
-     pyprint("WORD BOMB",(445,220),"white",font)
-     pyprint("Click to start",(445,300),"white")
+     pyprint("WORD BOMB",(screen_width//2,screen_height//2),"white",font)
+     pyprint("Click to start",(screen_width//2,(screen_height//2)+100),"white")
   pygame.display.flip()
   clock.tick(30)
 
 pygame.quit()
-
