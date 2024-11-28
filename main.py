@@ -182,7 +182,7 @@ while running:
       cursor_visible = (current_time // 500) % 2 == 0  # Toggle every 500 ms
       if cursor_visible:
         cursor_x = screen_width//2 + font.size(answer)[0] // 4 - 5*len(answer)  # Position the cursor after the text
-        pygame.draw.line(screen, (0, 0, 0), (cursor_x, 375), (cursor_x, 405), 2)  # Draw cursor as a vertical line
+        pygame.draw.line(screen, (0, 0, 0), (cursor_x, screen_height//2+85), (cursor_x, screen_height//2+115), 2)  # Draw cursor as a vertical line
 
       # Hearts
       """
@@ -202,7 +202,7 @@ while running:
       # Combination
       pyprint(f"{x.upper()}",(screen_width//2,screen_height//2),combination_colour,small_font)
       # Answer
-      pyprint(answer,(screen_width//2,screen_height-200))
+      pyprint(answer,(screen_width//2,screen_height//2+100))
       # Message
       if current_time - pause < 2000:
         pyprint(message,(445,450))
