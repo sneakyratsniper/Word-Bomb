@@ -27,6 +27,15 @@ arrow_surf = pygame.image.load("arrow.png").convert_alpha()
 arrow_surf = pygame.transform.rotate(arrow_surf, 90)
 arrow_surf = pygame.transform.scale(arrow_surf,(200,420))
 
+
+
+player_boxes = [
+    {"rect": pygame.Rect(260, 100, 370, 250), "label": "1 Player", "players": 1},
+    {"rect": pygame.Rect(650, 100, 370, 250), "label": "2 Players", "players": 2},
+    {"rect": pygame.Rect(260, 370, 370, 250), "label": "3 Players", "players": 3},
+    {"rect": pygame.Rect(650, 370, 370, 250), "label": "4 Players", "players": 4},
+]
+
 def pyprint(text,pos,colour = "white",font = lil_font):
   surf = font.render(text,True,colour)
   rect = surf.get_rect(center = (pos))
@@ -146,6 +155,19 @@ while running:
   for event in pygame.event.get():
     if event.type == pygame.QUIT:
       running = False
+    if game_choosing:  # Handle player selection screen
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = pygame.mouse.get_pos()
+            print(mouse_pos)
+            for box in player_boxes:
+                if box["rect"].collidepoint(mouse_pos):
+                    # Set up players based on the selection
+                    players = [{"name": f"Player {i+1}", "lives": 2} for i in range(box["players"])]
+                    player_choosing = False
+                    game_active = True
+                    naming = True  # Start naming round
+                    current_player = 0
+                    break
     if not game_active or game_choosing:
       keys = pygame.key.get_pressed()
       if event.type == pygame.MOUSEBUTTONDOWN:
@@ -274,7 +296,10 @@ while running:
       game_active = False
   elif game_choosing:
     screen.fill((134, 137, 143))
-
+    #pyprint("Select Number of Players", (screen_width // 2, 100), "white", font)
+    for box in player_boxes:
+        pygame.draw.rect(screen, (50, 50, 50), box["rect"])
+        pyprint(box["label"], box["rect"].center)
   else:
      players = [{"name": f"Player {i+1}", "lives": 2} for i in range(5)]
      question_answered = False
