@@ -22,6 +22,9 @@ empty_heart_surf = pygame.image.load('empty_heart.png').convert_alpha()
 empty_heart_surf = pygame.transform.scale(empty_heart_surf,(50,50))
 bomb_surf = pygame.image.load("bomb.png").convert_alpha()
 bomb_rect = bomb_surf.get_rect(center = ((screen_width//2)+30,((screen_height//2)-30)))
+arrow_surf = pygame.image.load("arrow.png").convert_alpha()
+arrow_surf = pygame.transform.rotate(arrow_surf, 90)
+arrow_surf = pygame.transform.scale(arrow_surf,(200,420))
 
 def pyprint(text,pos,colour = "white",font = lil_font):
   surf = font.render(text,True,colour)
@@ -57,10 +60,32 @@ def draw_player_info_ring(players, center, radius):
         x = center[0] + radius * math.cos(angle)
         y = center[1] + radius * math.sin(angle)
 
-        # Display the player's name and lives
+        # Display the player's name
         pyprint(player["name"], (x, y - 20), "white", small_font)  # Name slightly above
-        pyprint(f"{player['lives']} lives", (x, y + 20), "white", lil_font)  # Lives slightly below
 
+        # Display hearts for lives
+        max_lives = 2  # Maximum number of hearts to display
+        heart_spacing = 20  # Spacing between hearts
+        for j in range(max_lives):
+            heart_x = x - (max_lives * heart_spacing // 2) + j * heart_spacing - 10  # Offset hearts horizontally
+            heart_y = y + 10  # Position hearts below the name
+            if j < player["lives"]:
+                screen.blit(heart_surf, (heart_x, heart_y))  # Full heart
+            else:
+                screen.blit(empty_heart_surf, (heart_x, heart_y))  # Empty heart
+
+
+def rotate_arrow(arrow_surface, center, angle):
+    """Rotate the arrow and draw it at the center of the screen."""
+    rotated_arrow = pygame.transform.rotate(arrow_surface, -angle)
+    rotated_rect = rotated_arrow.get_rect(center=center)
+    screen.blit(rotated_arrow, rotated_rect)
+
+
+def calculate_angle_to_player(current_player, num_players):
+    """Calculate the angle the arrow should point to based on the player's position."""
+    angle_step = 360 / num_players  # Angle step in degrees
+    return current_player * angle_step
 
 with open("dictionary.txt", "r") as f:
     dictionary = sorted(word.strip().lower() for word in f.readlines())
@@ -99,11 +124,13 @@ combinations = [
 
 answer = ""
 message = ""
+answering = False
 lives = 0 
 pause = pygame.time.get_ticks()
 bomb = False
 combination_colour = "white"
 pulsing_speed = 0.005
+bomb_time = pygame.time.get_ticks()
 
 ring_radius = 250  # Radius of the circle
 ring_center = (screen_width // 2, screen_height // 2)  # Center of the ring
@@ -188,6 +215,9 @@ while running:
       else: 
         combination_colour = "white"
         pulsing_speed = 0.005
+        
+      angle_to_player = calculate_angle_to_player(current_player, len(players))
+      rotate_arrow(arrow_surf, ring_center, angle_to_player)
 
       # Bomb pulsing
       scale_factor = 1 + 0.05 * math.sin(current_time * pulsing_speed)  # Oscillate scale between 0.9 and 1.1
@@ -198,7 +228,7 @@ while running:
       scaled_bomb_rect = scaled_bomb_surf.get_rect(center=bomb_rect.center)
       screen.blit(scaled_bomb_surf, scaled_bomb_rect)  # Blit scaled bomb
       draw_player_info_ring(players, ring_center, ring_radius)
-
+     
       # Add the blinking cursor
       cursor_visible = (current_time // 500) % 2 == 0  # Toggle every 500 ms
       if cursor_visible:
