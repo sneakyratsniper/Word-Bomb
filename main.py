@@ -11,7 +11,7 @@ clock = pygame.time.Clock()
 running = True
 game_active = False
 game_choosing = False
-
+game_start = True
 pygame.display.set_caption('Word Bomb')
 font = pygame.font.SysFont("None",150)
 small_font = pygame.font.SysFont("None",70)
@@ -163,18 +163,19 @@ while running:
                 if box["rect"].collidepoint(mouse_pos):
                     # Set up players based on the selection
                     players = [{"name": f"Player {i+1}", "lives": 2} for i in range(box["players"])]
-                    player_choosing = False
                     game_active = True
                     naming = True  # Start naming round
                     current_player = 0
+                    game_choosing = False
+
                     break
-    if not game_active or game_choosing:
+    elif game_start:
       keys = pygame.key.get_pressed()
       if event.type == pygame.MOUSEBUTTONDOWN:
         game_choosing = True
-        game_start = True
+        game_start = False
         game_played = True
-    else:
+    elif game_active:
       if event.type == pygame.MOUSEBUTTONDOWN:
 
         print(f'Mouse clicked at {pygame.mouse.get_pos()}')
@@ -251,7 +252,6 @@ while running:
         
       angle_to_player = calculate_angle_to_player(current_player, len(players))
       rotate_arrow(arrow_surf, ring_center, angle_to_player)
-
       # Bomb pulsing
       scale_factor = 1 + 0.05 * math.sin(current_time * pulsing_speed)  # Oscillate scale between 0.9 and 1.1
       scaled_bomb_surf = pygame.transform.scale(
@@ -293,14 +293,14 @@ while running:
       if current_time - pause < 2000:
         pyprint(message,(screen_width//2,screen_height-100))
     else:
-      game_active = False
+      game_start = True
   elif game_choosing:
     screen.fill((134, 137, 143))
     #pyprint("Select Number of Players", (screen_width // 2, 100), "white", font)
     for box in player_boxes:
         pygame.draw.rect(screen, (50, 50, 50), box["rect"])
         pyprint(box["label"], box["rect"].center)
-  else:
+  elif game_start:
      players = [{"name": f"Player {i+1}", "lives": 2} for i in range(5)]
      question_answered = False
      answering = False
