@@ -10,6 +10,7 @@ screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 running = True
 game_active = False
+game_choosing = False
 
 pygame.display.set_caption('Word Bomb')
 font = pygame.font.SysFont("None",150)
@@ -90,6 +91,7 @@ def calculate_angle_to_player(current_player, num_players):
 with open("dictionary.txt", "r") as f:
     dictionary = sorted(word.strip().lower() for word in f.readlines())
 
+
 answered_dictionary = []
 
 def binary_search(words, target):
@@ -144,10 +146,10 @@ while running:
   for event in pygame.event.get():
     if event.type == pygame.QUIT:
       running = False
-    if not game_active:
+    if not game_active or game_choosing:
       keys = pygame.key.get_pressed()
       if event.type == pygame.MOUSEBUTTONDOWN:
-        game_active = True
+        game_choosing = True
         game_start = True
         game_played = True
     else:
@@ -270,7 +272,8 @@ while running:
         pyprint(message,(screen_width//2,screen_height-100))
     else:
       game_active = False
-
+  elif game_choosing:
+    screen.fill((134, 137, 143))
 
   else:
      players = [{"name": f"Player {i+1}", "lives": 2} for i in range(5)]
