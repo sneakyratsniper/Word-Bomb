@@ -26,8 +26,8 @@ bomb_rect = bomb_surf.get_rect(center = ((screen_width//2)+30,((screen_height//2
 arrow_surf = pygame.image.load("arrow.png").convert_alpha()
 arrow_surf = pygame.transform.rotate(arrow_surf, 90)
 arrow_surf = pygame.transform.scale(arrow_surf,(200,420))
-
-
+player_surf = pygame.image.load("player.png").convert_alpha()
+player_surf = pygame.transform.scale(player_surf,(100,100))
 
 player_boxes = [
     {"rect": pygame.Rect(260, 100, 370, 250), "label": "1 Player", "players": 1},
@@ -294,12 +294,55 @@ while running:
         pyprint(message,(screen_width//2,screen_height-100))
     else:
       game_start = True
-  elif game_choosing:
+  if game_choosing:
     screen.fill((134, 137, 143))
-    #pyprint("Select Number of Players", (screen_width // 2, 100), "white", font)
+
+    # Draw player selection boxes
     for box in player_boxes:
-        pygame.draw.rect(screen, (50, 50, 50), box["rect"])
-        pyprint(box["label"], box["rect"].center)
+        pygame.draw.rect(screen, (50, 50, 50), box["rect"])  # Draw box background
+
+        num_players = box["players"]
+        box_width, box_height = box["rect"].size
+        start_x = box["rect"].x
+        start_y = box["rect"].y
+
+        if num_players == 1:  # Single player image centered
+            player_x = start_x + (box_width - player_surf.get_width()) // 2
+            player_y = start_y + (box_height - player_surf.get_height()) // 2
+            screen.blit(player_surf, (player_x, player_y))
+
+        elif num_players == 2:  # Two players side by side
+            spacing = 20
+            total_width = 2 * player_surf.get_width() + spacing
+            player_x = start_x + (box_width - total_width) // 2
+            player_y = start_y + (box_height - player_surf.get_height()) // 2
+            for i in range(2):
+                screen.blit(player_surf, (player_x + i * (player_surf.get_width() + spacing), player_y))
+
+        elif num_players == 3:  # Triangle formation
+            top_x = start_x + box_width // 2 - player_surf.get_width() // 2
+            top_y = start_y + 10
+            bottom_x = start_x + (box_width - (2 * player_surf.get_width() + 20)) // 2
+            bottom_y = start_y + box_height - player_surf.get_height() - 30
+
+            # Top player
+            screen.blit(player_surf, (top_x, top_y))
+            # Bottom two players
+            for i in range(2):
+                screen.blit(player_surf, (bottom_x + i * (player_surf.get_width() + 20), bottom_y))
+
+        elif num_players == 4:  # Square formation
+            spacing = 20
+            grid_x = start_x + (box_width - (2 * player_surf.get_width() + spacing)) // 2
+            grid_y = start_y + (box_height - (2 * player_surf.get_height() + spacing)) // 2
+
+            # Draw 2x2 grid
+            for row in range(2):
+                for col in range(2):
+                    player_x = grid_x + col * (player_surf.get_width() + spacing)
+                    player_y = grid_y + row * (player_surf.get_height() + spacing-10)
+                    screen.blit(player_surf, (player_x, player_y))
+
   elif game_start:
      players = [{"name": f"Player {i+1}", "lives": 2} for i in range(5)]
      question_answered = False
@@ -317,6 +360,7 @@ while running:
      screen.fill((134, 137, 143))
      pyprint("WORD BOMB",(screen_width//2,screen_height//2),"white",font)
      pyprint("Click to start",(screen_width//2,(screen_height//2)+100),"white")
+
   pygame.display.flip()
   clock.tick(30)
 
