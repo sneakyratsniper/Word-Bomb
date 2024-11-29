@@ -128,6 +128,7 @@ answering = False
 lives = 0 
 pause = pygame.time.get_ticks()
 bomb = False
+naming = True
 combination_colour = "white"
 pulsing_speed = 0.005
 bomb_time = pygame.time.get_ticks()
@@ -182,7 +183,7 @@ while running:
         rng = random.randint(0,len(combinations)-1)
         x = combinations[rng]
         bomb = False
-      if answering:
+      if answering and not naming:
         answer = answer.strip().lower()
 
         if x not in answer:
@@ -200,8 +201,12 @@ while running:
           current_player = (current_player + 1) % len(players)  # Switch turn
 
         answer = ""
-
+      elif answering and naming:
+        players[current_player]["name"] = answer
+        current_player = (current_player + 1) % len(players)
+        answer = ""
       answering = False
+      
       if current_time - bomb_time > 10000:
         combination_colour = (250,83,65)
         bomb = True
@@ -249,7 +254,11 @@ while running:
       # Timer      
       #pyprint(str(10-int((current_time - bomb_time)/1000)),(445,50))
       # Combination
-      pyprint(f"{x.upper()}",(screen_width//2,screen_height//2),combination_colour,small_font)
+      if not naming:
+        pyprint(f"{x.upper()}",(screen_width//2,screen_height//2),combination_colour,small_font)
+      else:
+        bomb_time = current_time
+        pyprint(f"Enter your name",(screen_width//2,screen_height//2),"white",small_font)
       # Answer
       pyprint(answer,(screen_width//2,screen_height//2+100))
       # Message
@@ -260,10 +269,11 @@ while running:
 
 
   else:
-     players = [{"name": f"Player {i+1}", "lives": 2} for i in range(3)]
+     players = [{"name": f"Player {i+1}", "lives": 2} for i in range(2)]
      question_answered = False
      answering = False
      boom = False
+     naming = True
      answer = ""
      message = ""
      answered_dictionary = []
