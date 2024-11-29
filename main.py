@@ -85,11 +85,28 @@ def draw_player_info_ring(players, center, radius):
                 screen.blit(empty_heart_surf, (heart_x, heart_y))  # Empty heart
 
 
-def rotate_arrow(arrow_surface, center, angle):
-    """Rotate the arrow and draw it at the center of the screen."""
-    rotated_arrow = pygame.transform.rotate(arrow_surface, -angle)
+def rotate_arrow(arrow_surface, center, current_angle, target_angle, rotation_speed):
+    """
+    Smoothly rotate the arrow toward the target angle.
+    """
+    # Calculate the shortest rotational direction (clockwise or counterclockwise)
+    angle_diff = (target_angle - current_angle + 360) % 360
+    if angle_diff > 180:
+        angle_diff -= 360  # Rotate counterclockwise if shorter
+
+    # Incrementally update the current angle based on rotation speed
+    if abs(angle_diff) <= rotation_speed:
+        current_angle = target_angle  # Snap to target if close enough
+    else:
+        current_angle += rotation_speed if angle_diff > 0 else -rotation_speed
+
+    # Draw the rotated arrow
+    rotated_arrow = pygame.transform.rotate(arrow_surface, -current_angle)
     rotated_rect = rotated_arrow.get_rect(center=center)
     screen.blit(rotated_arrow, rotated_rect)
+
+    return current_angle  # Return the updated angle
+
 
 
 def calculate_angle_to_player(current_player, num_players):
@@ -143,6 +160,11 @@ naming = True
 combination_colour = "white"
 pulsing_speed = 0.005
 bomb_time = pygame.time.get_ticks()
+bomb_skip = 0
+
+current_arrow_angle = 0  # Initial arrow angle
+rotation_speed = 10  # Adjust rotation speed for smoothness (higher = faster)
+
 
 ring_radius = 250  # Radius of the circle
 ring_center = (screen_width // 2, screen_height // 2)  # Center of the ring
@@ -222,7 +244,8 @@ while running:
           rng = random.randint(0, len(combinations) - 1)
           x = combinations[rng]
           message = ""
-          bomb_time = current_time
+          bomb_time = current_time - bomb_skip
+          bomb_skip += 100
           current_player = (current_player + 1) % len(players)  # Switch turn
 
         answer = ""
@@ -239,7 +262,8 @@ while running:
       if current_time - bomb_time > 10000:
         combination_colour = (250,83,65)
         bomb = True
-        bomb_time = current_time
+        bomb_time = current_time - bomb_skip
+        bomb_skip = 0 
       elif current_time - bomb_time >= 7000:
         combination_colour = (250, 83, 65)
         pulsing_speed = 0.015
@@ -250,8 +274,14 @@ while running:
         combination_colour = "white"
         pulsing_speed = 0.005
         
-      angle_to_player = calculate_angle_to_player(current_player, len(players))
-      rotate_arrow(arrow_surf, ring_center, angle_to_player)
+      #angle_to_player = calculate_angle_to_player(current_player, len(players))
+      #rotate_arrow(arrow_surf, ring_center, angle_to_player)
+      target_angle = calculate_angle_to_player(current_player, len(players))
+    
+    # Smoothly rotate the arrow toward the target angle
+      current_arrow_angle = rotate_arrow(
+        arrow_surf, ring_center, current_arrow_angle, target_angle, rotation_speed
+    )
       # Bomb pulsing
       scale_factor = 1 + 0.05 * math.sin(current_time * pulsing_speed)  # Oscillate scale between 0.9 and 1.1
       scaled_bomb_surf = pygame.transform.scale(
@@ -349,6 +379,7 @@ while running:
      answering = False
      boom = False
      naming = True
+     bomb_skip = 0
      answer = ""
      message = ""
      answered_dictionary = []
@@ -362,6 +393,6 @@ while running:
      pyprint("Click to start",(screen_width//2,(screen_height//2)+100),"white")
 
   pygame.display.flip()
-  clock.tick(30)
+  clock.tick(60)
 
 pygame.quit()
