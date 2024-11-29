@@ -187,11 +187,11 @@ while running:
         answer = answer.strip().lower()
 
         if x not in answer:
-          message = f"{players[current_player]['name']} didn't include the letters!"
+          message = "Letters needed!"
         elif answer in answered_dictionary:
-          message = f"{players[current_player]['name']} reused a word!"
+          message = "Word already used!"
         elif binary_search(dictionary, answer) == -1:
-          message = f"{players[current_player]['name']}'s word is invalid!"
+          message = "Not in dictionary!"
         else:
           answered_dictionary.append(answer)
           rng = random.randint(0, len(combinations) - 1)
@@ -202,9 +202,13 @@ while running:
 
         answer = ""
       elif answering and naming:
+        answer = answer.strip()
         players[current_player]["name"] = answer
-        current_player = (current_player + 1) % len(players)
+        current_player = current_player + 1
         answer = ""
+        if current_player == len(players):
+          naming = False
+          current_player = 0
       answering = False
       
       if current_time - bomb_time > 10000:
@@ -258,7 +262,7 @@ while running:
         pyprint(f"{x.upper()}",(screen_width//2,screen_height//2),combination_colour,small_font)
       else:
         bomb_time = current_time
-        pyprint(f"Enter your name",(screen_width//2,screen_height//2),"white",small_font)
+        pyprint(f"NAME",(screen_width//2,screen_height//2),"white",lil_font)
       # Answer
       pyprint(answer,(screen_width//2,screen_height//2+100))
       # Message
@@ -269,7 +273,7 @@ while running:
 
 
   else:
-     players = [{"name": f"Player {i+1}", "lives": 2} for i in range(2)]
+     players = [{"name": f"Player {i+1}", "lives": 2} for i in range(5)]
      question_answered = False
      answering = False
      boom = False
