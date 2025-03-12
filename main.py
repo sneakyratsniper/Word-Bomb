@@ -61,29 +61,28 @@ def blurSurf(surface, amt):
 
 
 def draw_player_info_ring(players, center, radius):
-    num_players = len(players)
+    visible_players = [p for p in players if not p.get("ai", False)]  # Exclude AI
+    num_players = len(visible_players)
+    
+    if num_players == 0:  # Just in case
+        return
+    
     angle_step = 2 * math.pi / num_players  # Angle between each player
-
-    for i, player in enumerate(players):
-        angle = -math.pi / 2 + i * angle_step  # Current angle for this player
-        # Calculate position using polar coordinates
+    for i, player in enumerate(visible_players):
+        angle = -math.pi / 2 + i * angle_step
         x = center[0] + radius * math.cos(angle)
         y = center[1] + radius * math.sin(angle)
 
-        # Display the player's name
-        pyprint(player["name"], (x, y - 20), "white", small_font)  # Name slightly above
-
-        # Display hearts for lives
-        max_lives = 2  # Maximum number of hearts to display
-        heart_spacing = 20  # Spacing between hearts
+        pyprint(player["name"], (x, y - 20), "white", small_font)
+        max_lives = 2
+        heart_spacing = 20
         for j in range(max_lives):
-            heart_x = x - (max_lives * heart_spacing // 2) + j * heart_spacing - 10  # Offset hearts horizontally
-            heart_y = y + 10  # Position hearts below the name
+            heart_x = x - (max_lives * heart_spacing // 2) + j * heart_spacing - 10
+            heart_y = y + 10
             if j < player["lives"]:
-                screen.blit(heart_surf, (heart_x, heart_y))  # Full heart
+                screen.blit(heart_surf, (heart_x, heart_y))
             else:
-                screen.blit(empty_heart_surf, (heart_x, heart_y))  # Empty heart
-
+                screen.blit(empty_heart_surf, (heart_x, heart_y))
 
 def rotate_arrow(arrow_surface, center, current_angle, target_angle, rotation_speed):
     """
@@ -170,7 +169,7 @@ ring_radius = 250  # Radius of the circle
 ring_center = (screen_width // 2, screen_height // 2)  # Center of the ring
 
 
-players = [{"name": f"Player {i+1}", "lives": 2} for i in range(3)]  # 3 players
+players = [{"name": f"Player {i+1}", "lives": 2, "ai" : False} for i in range(3)]  # 3 players
 current_player = 0
 
 while running:
@@ -184,12 +183,19 @@ while running:
             for box in player_boxes:
                 if box["rect"].collidepoint(mouse_pos):
                     # Set up players based on the selection
-                    players = [{"name": f"Player {i+1}", "lives": 2} for i in range(box["players"])]
+                    if box["players"] == 1:
+                        players = [
+                            {"name": "Player 1", "lives": 2, "ai": False},
+                            {"name": "AI", "lives": 2, "ai": True}
+                        ]
+                        single_player = True
+                    else:
+                        players = [{"name": f"Player {i+1}", "lives": 2} for i in range(box["players"])]           
+                        single_player = False
                     game_active = True
                     naming = True  # Start naming round
                     current_player = 0
                     game_choosing = False
-
                     break
     elif game_start:
       keys = pygame.key.get_pressed()
@@ -215,11 +221,12 @@ while running:
   if game_active:
     current_time = pygame.time.get_ticks()
     screen.fill((134, 137, 143))
-    if len(players) > 1:
+    if len(players) > 1 and not game_start:
       if bomb:
         message = f"{players[current_player]['name']} ran out of time!"
         players[current_player]["lives"] -= 1
         if players[current_player]["lives"] <= 0:
+          score = 0 
           eliminated_player = players.pop(current_player)
           message = f"{eliminated_player['name']} has been eliminated!"
           current_player %= len(players)  # Adjust index
@@ -230,9 +237,15 @@ while running:
         rng = random.randint(0,len(combinations)-1)
         x = combinations[rng]
         bomb = False
+      
+      
+      if players[current_player].get("ai", False):  # AI's turn
+            bomb_time = current_time  # Reset bomb timer
+            current_player = (current_player + 1) % len(players)  # Skip AI instantly
+
       if answering and not naming:
         answer = answer.strip().lower()
-
+        
         if x not in answer:
           message = "Letters needed!"
         elif answer in answered_dictionary:
@@ -247,16 +260,16 @@ while running:
           bomb_time = current_time - bomb_skip
           bomb_skip += 100
           current_player = (current_player + 1) % len(players)  # Switch turn
-
+          score += 100
         answer = ""
       elif answering and naming:
         answer = answer.strip()
         players[current_player]["name"] = answer
-        current_player = current_player + 1
+        current_player += 1
         answer = ""
-        if current_player == len(players):
-          naming = False
+        if current_player >= len(players) or players[current_player].get("ai",False):
           current_player = 0
+          naming = False
       answering = False
       
       if current_time - bomb_time > 10000:
@@ -276,12 +289,13 @@ while running:
         
       #angle_to_player = calculate_angle_to_player(current_player, len(players))
       #rotate_arrow(arrow_surf, ring_center, angle_to_player)
-      target_angle = calculate_angle_to_player(current_player, len(players))
-    
+      if not players[current_player].get("ai", False):  # Only rotate if it's not AI
+        target_angle = calculate_angle_to_player(current_player, len(players))
+        current_arrow_angle = rotate_arrow(arrow_surf, ring_center, current_arrow_angle, target_angle, rotation_speed)
+
+
     # Smoothly rotate the arrow toward the target angle
-      current_arrow_angle = rotate_arrow(
-        arrow_surf, ring_center, current_arrow_angle, target_angle, rotation_speed
-    )
+     
       # Bomb pulsing
       scale_factor = 1 + 0.05 * math.sin(current_time * pulsing_speed)  # Oscillate scale between 0.9 and 1.1
       scaled_bomb_surf = pygame.transform.scale(
@@ -314,6 +328,7 @@ while running:
       # Combination
       if not naming:
         pyprint(f"{x.upper()}",(screen_width//2,screen_height//2),combination_colour,small_font)
+      
       else:
         bomb_time = current_time
         pyprint(f"NAME",(screen_width//2,screen_height//2),"white",lil_font)
@@ -322,6 +337,8 @@ while running:
       # Message
       if current_time - pause < 2000:
         pyprint(message,(screen_width//2,screen_height-100))
+      if single_player:
+        pyprint(str(score),(screen_width//2, screen_height-130),"white",small_font)
     else:
       game_start = True
   if game_choosing:
@@ -374,12 +391,14 @@ while running:
                     screen.blit(player_surf, (player_x, player_y))
 
   elif game_start:
-     players = [{"name": f"Player {i+1}", "lives": 2} for i in range(5)]
+     players = [{"name": f"Player {i+1}", "lives": 2,"ai": False} for i in range(5)]
      question_answered = False
      answering = False
      boom = False
      naming = True
      bomb_skip = 0
+     score = 0 
+     single_player = False
      answer = ""
      message = ""
      answered_dictionary = []
