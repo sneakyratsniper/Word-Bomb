@@ -138,16 +138,18 @@ def binary_search(words, target):
 
 combinations = [
     "an", "ing", "cr", "er", "br", "th", "ch", "st", "tr", "sh",
-    "pl", "fr", "gr", "pr", "bl", "cl", "dr", "fl", "gl", "sp",
+    "pl", "fr", "gr", "pr", "bl","ts","unc","fr","ek","pb", "cl", "dr", "fl", "gl", "sp",
     "sl", "sw", "tw", "sk", "sn", "sm", "sc", "wh", "wr", "kn",
-    "ed", "ly", "es", "en", "nt", "mp", "nd", "ng", "ld", "lt",
+    "ed", "ly","tr","aa", "es", "en", "nt", "mp", "nd", "ng", "ld", "lt",
     "pt", "rk", "rt", "rm", "rp", "lk", "ft", "mn", "ph", "gh",
     "ex", "un", "in", "re", "de", "up", "out", "pre", "mis", "sub",
-    "bio", "eco", "geo", "aqua", "psy", "pro", "tri", "quad", "uni", "bi",
+    "bio", "eco", "pro", "tri", "quad", "uni", "bi",
     "cir", "gen", "tan", "cir", "par", "syn", "hyp", "mic", "mac",
-    "tox", "neo", "aer", "dem", "met", "cos", "geo", "aut", "alt", "sup",
+    "tox", "neo", "aer", "dem", "met", "cos", "aut", "alt", "sup",
     "max", "min", "opt", "via", "act", "lit", "exp", "dev", "sys", "mod"
 ]
+
+combinations = ["pn"]
 
 answer = ""
 message = ""
