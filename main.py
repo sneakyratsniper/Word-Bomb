@@ -142,7 +142,7 @@ combinations = [
     "sl", "sw", "tw", "sk", "sn", "sm", "sc", "wh", "wr", "kn",
     "ed", "ly","tr","aa", "es", "en", "nt", "mp", "nd", "ng", "ld", "lt",
     "pt", "rk", "rt", "rm", "rp", "lk", "ft", "mn", "ph", "gh",
-    "ex", "un", "in", "re", "de", "up", "out", "pre", "mis", "sub",
+    "ex", "un", "in", "re", "de","mi, "up", "out", "pre", "mis", "sub",
     "bio", "eco", "pro", "tri", "quad", "uni", "bi",
     "cir", "gen", "tan", "cir", "par", "syn", "hyp", "mic", "mac",
     "tox", "neo", "aer", "dem", "met", "cos", "aut", "alt", "sup",
