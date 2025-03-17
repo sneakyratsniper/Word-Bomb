@@ -140,16 +140,15 @@ combinations = [
     "an", "ing", "cr", "er", "br", "th", "ch", "st", "tr", "sh",
     "pl", "fr", "gr", "pr", "bl","ts","unc","fr","ek","pb", "cl", "dr", "fl", "gl", "sp",
     "sl", "sw", "tw", "sk", "sn", "sm", "sc", "wh", "wr", "kn",
-    "ed", "ly","tr","aa", "es", "en", "nt", "mp", "nd", "ng", "ld", "lt",
+    "ed", "ly","tr","aa", "es", "en", "nt", "mp", "di", "nd", "ng", "ld", "lt",
     "pt", "rk", "rt", "rm", "rp", "lk", "ft", "mn", "ph", "gh",
-    "ex", "un", "in", "re", "de","mi, "up", "out", "pre", "mis", "sub",
+    "ex", "un", "in", "re", "de","mi", "up", "out", "pre", "mis", "sub",
     "bio", "eco", "pro", "tri", "quad", "uni", "bi",
     "cir", "gen", "tan", "cir", "par", "syn", "hyp", "mic", "mac",
     "tox", "neo", "aer", "dem", "met", "cos", "aut", "alt", "sup",
     "max", "min", "opt", "via", "act", "lit", "exp", "dev", "sys", "mod"
 ]
 
-combinations = ["pn"]
 
 answer = ""
 message = ""
